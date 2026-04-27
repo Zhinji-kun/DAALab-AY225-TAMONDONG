@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Human Activity Recognition</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Human Activity Recognition</h1>
+    <p class="subtitle">Using Smartphone Sensors</p>
+
+    <div class="card">
+      <h2>Live Activity</h2>
+      <div id="activity" class="activity">Waiting for data...</div>
+    </div>
+
+    <div class="card">
+      <h2>Sensor Data</h2>
+      <p>X: <span id="x">0</span></p>
+      <p>Y: <span id="y">0</span></p>
+      <p>Z: <span id="z">0</span></p>
+    </div>
+
+    <button id="startBtn">Start Detection</button>
+  </div>
+
+  <script src="dashboard.js"></script>
+</body>
+</html>
