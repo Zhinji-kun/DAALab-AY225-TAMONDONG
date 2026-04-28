@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DataSci Collab · Dataset Explorer</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Courier New', monospace; background: #f5f1eb; color: #2e3348; padding: 20px; }
+    .container { max-width: 1400px; margin: 0 auto; }
+    h1 { font-size: 2.2rem; margin-bottom: 10px; color: #1a2035; }
+    .masthead { background: #1a2035; color: #fff; padding: 30px; border-radius: 8px; margin-bottom: 30px; }
+    .masthead h1 { color: #fff; margin-bottom: 5px; }
+    .masthead p { color: #aaa; font-size: 0.9rem; }
+    section { margin-bottom: 40px; }
+    .section-title { font-size: 1.5rem; color: #1a2035; margin-bottom: 20px; border-bottom: 2px solid #d94f3d; padding-bottom: 10px; }
+    .stat-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; }
+    .stat-card { background: #fff; border: 1px solid #d8d1c4; border-radius: 8px; padding: 20px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .stat-label { font-size: 0.8rem; color: #8a8577; text-transform: uppercase; margin-bottom: 8px; }
+    .stat-value { font-size: 2rem; font-weight: bold; color: #d94f3d; }
+    .toolbar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+    input[type="text"], select { padding: 10px; border: 1px solid #d8d1c4; border-radius: 4px; font-family: monospace; }
+    input[type="text"] { width: 250px; }
+    button { padding: 10px 20px; background: #1a2035; color: #fff; border: none; border-radius: 4px; cursor: pointer; }
+    button:hover { background: #2e3a56; }
+    button.secondary { background: #3a7d5c; }
+    button.secondary:hover { background: #4a9a6f; }
+    .table-container { background: #fff; border: 1px solid #d8d1c4; border-radius: 8px; overflow: auto; max-height: 600px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    th { background: #1a2035; color: #c8b98a; padding: 12px; text-align: left; font-weight: bold; position: sticky; top: 0; }
+    td { padding: 10px 12px; border-bottom: 1px solid #e8e3d8; }
+    tr:hover { background: #faf8f4; }
+    tr.num { color: #3a7d5c; }
+    .row-count { color: #8a8577; font-size: 0.9rem; }
+    .chart-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; margin-bottom: 30px; }
+    .chart-container { background: #fff; border: 1px solid #d8d1c4; border-radius: 8px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .chart-title { font-size: 1.1rem; font-weight: bold; color: #1a2035; margin-bottom: 15px; }
+    canvas { max-height: 250px; }
+    .analysis-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 30px; }
+    .analysis-tile { background: #fff; border: 1px solid #d8d1c4; border-radius: 8px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .analysis-tile h4 { color: #1a2035; margin-bottom: 15px; border-bottom: 1px solid #e8e3d8; padding-bottom: 10px; }
+    .kv-pair { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e8e3d8; font-size: 0.9rem; }
+    .kv-pair .key { color: #8a8577; }
+    .kv-pair .value { color: #3a7d5c; font-weight: bold; }
+    .insights { background: #1a2035; color: #8a93b0; border-radius: 8px; padding: 30px; line-height: 1.8; }
+    .insights h4 { color: #c8b98a; margin-bottom: 15px; }
+    .highlight { color: #e2d9c8; font-weight: bold; }
+    .loading { text-align: center; color: #8a8577; padding: 40px; }
+    .error { background: #fff3f2; border: 1px solid #f5bdb9; border-left: 4px solid #d94f3d; padding: 15px; border-radius: 4px; color: #9b2c2c; margin-bottom: 20px; }
+  </style>
+</head>
+<body>
+<div class="container">
+
+<div class="masthead">
+  <h1>🔍 Dataset Explorer & Analysis</h1>
+  <p>Real-time data visualization, statistical analysis & insights</p>
+</div>
+
+<section id="summary">
+  <div class="section-title">Summary Statistics</div>
+  <div class="stat-strip">
+    <div class="stat-card">
+      <div class="stat-label">Mean Value</div>
+      <div class="stat-value" id="meanVal">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Std Deviation</div>
+      <div class="stat-value" id="stdVal">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Total Records</div>
+      <div class="stat-value" id="totalVal">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Total Columns</div>
+      <div class="stat-value" id="colsVal">—</div>
+    </div>
+  </div>
+</section>
+
+<section id="data">
+  <div class="section-title">📊 Dataset Explorer</div>
+  <div class="toolbar">
+    <input type="text" id="filterInput" placeholder="Filter any column...">
+    <select id="sortSelect"><option value="">Sort by...</option></select>
+    <button onclick="applyFilter()">Apply Filter</button>
+    <button class="secondary" onclick="resetTable()">Reset</button>
+    <span class="row-count" id="rowCount"></span>
+  </div>
+  <div class="table-container">
+    <table id="dataTable">
+      <thead><tr><th>#</th></tr></thead>
+      <tbody id="tableBody"><tr><td colspan="10" class="loading">⏳ Loading dataset...</td></tr></tbody>
+    </table>
+  </div>
+</section>
+
+<section id="viz">
+  <div class="section-title">📈 Visualizations</div>
+  <div class="chart-grid">
+    <div class="chart-container">
+      <div class="chart-title">Distribution</div>
+      <canvas id="histogramChart"></canvas>
+    </div>
+    <div class="chart-container">
+      <div class="chart-title">Activity Breakdown</div>
+      <canvas id="pieChart"></canvas>
+    </div>
+    <div class="chart-container">
+      <div class="chart-title">Correlation Heatmap</div>
+      <canvas id="scatterChart"></canvas>
+    </div>
+  </div>
+</section>
+
+<section id="analysis">
+  <div class="section-title">📉 Statistical Analysis</div>
+  <div class="analysis-grid">
+    <div class="analysis-tile">
+      <h4>Descriptive Statistics</h4>
+      <div class="kv-pair"><span class="key">Min</span><span class="value" id="minStat">—</span></div>
+      <div class="kv-pair"><span class="key">Max</span><span class="value" id="maxStat">—</span></div>
+      <div class="kv-pair"><span class="key">Range</span><span class="value" id="rangeStat">—</span></div>
+      <div class="kv-pair"><span class="key">Variance</span><span class="value" id="varStat">—</span></div>
+    </div>
+    <div class="analysis-tile">
+      <h4>Correlation</h4>
+      <div class="kv-pair"><span class="key">Pearson R</span><span class="value" id="pearsonStat">—</span></div>
+      <div class="kv-pair"><span class="key">Interpretation</span><span class="value" id="interpretStat">—</span></div>
+    </div>
+    <div class="analysis-tile">
+      <h4>Linear Regression</h4>
+      <div class="kv-pair"><span class="key">Slope</span><span class="value" id="slopeStat">—</span></div>
+      <div class="kv-pair"><span class="key">Intercept</span><span class="value" id="interceptStat">—</span></div>
+      <div class="kv-pair"><span class="key">R²</span><span class="value" id="r2Stat">—</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="insights">
+  <div class="insights">
+    <h4>✦ Key Insights</h4>
+    <div id="insightsText">Analyzing dataset...</div>
+  </div>
+</section>
+
+</div>
+
+<script>
+let globalData = { headers: [], rows: [], filtered: [] };
+let charts = {};
+
+async function loadCSV() {
+  try {
+    const urls = [
+      './dataset/test.csv',
+      'http://127.0.0.1:5000/dataset/test.csv'
+    ];
+    let csv = null;
+    for (const url of urls) {
+      try {
+        const res = await fetch(url, { cache: 'no-store' });
+        if (res.ok) { csv = await res.text(); break; }
+      } catch (e) {}
+    }
+    if (!csv) throw new Error('Could not load CSV from any source');
+    parseAndRender(csv);
+  } catch (e) {
+    document.getElementById('tableBody').innerHTML = `<tr><td colspan="20" class="error"><strong>Error:</strong> ${e.message}</td></tr>`;
+  }
+}
+
+function parseCSV(text) {
+  const rows = [];
+  let row = [];
+  let field = '';
+  let inQuotes = false;
+  const src = String(text || '').replace(/^\uFEFF/, '');
+  
+  for (let i = 0; i < src.length; i++) {
+    const c = src[i];
+    if (inQuotes) {
+      if (c === '"' && src[i+1] === '"') { field += '"'; i++; }
+      else if (c === '"') { inQuotes = false; }
+      else { field += c; }
+    } else {
+      if (c === '"') { inQuotes = true; }
+      else if (c === ',') { row.push(field); field = ''; }
+      else if (c === '\n') { row.push(field); field = ''; rows.push(row); row = []; }
+      else if (c === '\r') {}
+      else { field += c; }
+    }
+  }
+  row.push(field);
+  rows.push(row);
+  
+  while (rows.length && rows[rows.length-1].every(v => !String(v).trim())) rows.pop();
+  const headers = (rows.shift() || []).map(h => String(h).trim());
+  for (const r of rows) {
+    while (r.length < headers.length) r.push('');
+    if (r.length > headers.length) r.length = headers.length;
+  }
+  return { headers, rows };
+}
+
+function parseAndRender(csv) {
+  const parsed = parseCSV(csv);
+  globalData = { ...parsed, filtered: parsed.rows };
+  
+  renderTable(globalData.rows);
+  buildSortOptions();
+  updateStats();
+  renderCharts();
+  renderAnalysis();
+  renderInsights();
+}
+
+function renderTable(rows, limit = 50) {
+  const tbody = document.getElementById('tableBody');
+  const headers = globalData.headers;
+  const display = rows.slice(0, limit);
+  
+  let html = '';
+  for (let i = 0; i < display.length; i++) {
+    html += `<tr>${display[i].map((v, j) => {
+      const isNum = !isNaN(v) && v !== '';
+      return `<td ${isNum ? 'class="num"' : ''}>${String(v)}</td>`;
+    }).join('')}</tr>`;
+  }
+  
+  if (!html) html = '<tr><td colspan="20" class="loading">No data</td></tr>';
+  tbody.innerHTML = html;
+  
+  document.getElementById('rowCount').textContent = `Showing ${Math.min(limit, rows.length)} of ${rows.length} rows`;
+}
+
+function buildSortOptions() {
+  const sel = document.getElementById('sortSelect');
+  globalData.headers.forEach((h, i) => {
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = h;
+    sel.appendChild(opt);
+  });
+}
+
+function applyFilter() {
+  const query = (document.getElementById('filterInput').value || '').toLowerCase();
+  const sortIdx = parseInt(document.getElementById('sortSelect').value) || -1;
+  
+  let filtered = globalData.rows;
+  if (query) {
+    filtered = filtered.filter(row => row.some(v => String(v).toLowerCase().includes(query)));
+  }
+  
+  if (sortIdx >= 0) {
+    filtered = [...filtered].sort((a, b) => {
+      const av = a[sortIdx] || '';
+      const bv = b[sortIdx] || '';
+      return isNaN(av) ? String(av).localeCompare(String(bv)) : Number(bv) - Number(av);
+    });
+  }
+  
+  globalData.filtered = filtered;
+  renderTable(filtered);
+}
+
+function resetTable() {
+  document.getElementById('filterInput').value = '';
+  document.getElementById('sortSelect').value = '';
+  globalData.filtered = globalData.rows;
+  renderTable(globalData.rows);
+}
+
+function getNumericColumn(idx) {
+  return globalData.rows
+    .map(r => parseFloat(r[idx]))
+    .filter(v => !isNaN(v));
+}
+
+function updateStats() {
+  const numericIdx = globalData.headers.findIndex(h => /score|value|price|amount/i.test(h));
+  if (numericIdx < 0) {
+    document.getElementById('meanVal').textContent = '—';
+    document.getElementById('stdVal').textContent = '—';
+    document.getElementById('totalVal').textContent = globalData.rows.length;
+    document.getElementById('colsVal').textContent = globalData.headers.length;
+    return;
+  }
+  
+  const nums = getNumericColumn(numericIdx);
+  const mean = nums.length ? nums.reduce((s, v) => s + v, 0) / nums.length : 0;
+  const variance = nums.length ? nums.reduce((s, v) => s + Math.pow(v - mean, 2), 0) / nums.length : 0;
+  const std = Math.sqrt(variance);
+  
+  document.getElementById('meanVal').textContent = mean.toFixed(2);
+  document.getElementById('stdVal').textContent = std.toFixed(2);
+  document.getElementById('totalVal').textContent = globalData.rows.length;
+  document.getElementById('colsVal').textContent = globalData.headers.length;
+}
+
+function renderCharts() {
+  // Find first numeric column
+  const numIdx = globalData.headers.findIndex(h => /value|score|price|amount/i.test(h));
+  const actIdx = globalData.headers.findIndex(h => /activity|type|category/i.test(h));
+  
+  if (numIdx >= 0) {
+    const nums = getNumericColumn(numIdx);
+    if (nums.length > 0) renderHistogram(nums);
+  }
+  
+  if (actIdx >= 0) {
+    const activities = globalData.rows.map(r => r[actIdx]);
+    const counts = {};
+    activities.forEach(a => counts[a] = (counts[a] || 0) + 1);
+    renderPie(counts);
+  }
+  
+  if (numIdx >= 0) {
+    const nums = getNumericColumn(numIdx);
+    renderScatter(nums);
+  }
+}
+
+function renderHistogram(data) {
+  const ctx = document.getElementById('histogramChart')?.getContext('2d');
+  if (!ctx) return;
+  if (charts.hist) charts.hist.destroy();
+  charts.hist = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: Array.from({length: 10}, (_, i) => `${i*10}-${(i+1)*10}`),
+      datasets: [{
+        label: 'Frequency',
+        data: Array.from({length: 10}, (_, i) => data.filter(v => v >= i*10 && v < (i+1)*10).length),
+        backgroundColor: '#d94f3d'
+      }]
+    },
+    options: { responsive: true, plugins: { legend: { display: false } } }
+  });
+}
+
+function renderPie(counts) {
+  const ctx = document.getElementById('pieChart')?.getContext('2d');
+  if (!ctx) return;
+  if (charts.pie) charts.pie.destroy();
+  charts.pie = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: Object.keys(counts),
+      datasets: [{
+        data: Object.values(counts),
+        backgroundColor: ['#2a7a50', '#3a6ea8', '#b5820d', '#d94f3d', '#c8b98a', '#5a8fab']
+      }]
+    },
+    options: { responsive: true }
+  });
+}
+
+function renderScatter(data) {
+  const ctx = document.getElementById('scatterChart')?.getContext('2d');
+  if (!ctx) return;
+  if (charts.scatter) charts.scatter.destroy();
+  const pts = data.map((v, i) => ({ x: i, y: v }));
+  charts.scatter = new Chart(ctx, {
+    type: 'scatter',
+    data: {
+      datasets: [{
+        label: 'Values',
+        data: pts,
+        backgroundColor: '#3a7d5c',
+        pointRadius: 4
+      }]
+    },
+    options: { responsive: true, plugins: { legend: { display: false } } }
+  });
+}
+
+function renderAnalysis() {
+  const numIdx = globalData.headers.findIndex(h => /value|score|price|amount/i.test(h));
+  if (numIdx < 0) return;
+  
+  const nums = getNumericColumn(numIdx);
+  if (nums.length === 0) return;
+  
+  const min = Math.min(...nums);
+  const max = Math.max(...nums);
+  const mean = nums.reduce((s, v) => s + v, 0) / nums.length;
+  const variance = nums.reduce((s, v) => s + Math.pow(v - mean, 2), 0) / nums.length;
+  const std = Math.sqrt(variance);
+  
+  document.getElementById('minStat').textContent = min.toFixed(2);
+  document.getElementById('maxStat').textContent = max.toFixed(2);
+  document.getElementById('rangeStat').textContent = (max - min).toFixed(2);
+  document.getElementById('varStat').textContent = variance.toFixed(2);
+  
+  // Correlation
+  const pearson = calculatePearson(nums, nums.map((v, i) => i));
+  document.getElementById('pearsonStat').textContent = pearson.toFixed(3);
+  const strength = Math.abs(pearson) > 0.7 ? 'Strong' : Math.abs(pearson) > 0.4 ? 'Moderate' : 'Weak';
+  document.getElementById('interpretStat').textContent = strength;
+  
+  // Regression
+  const slope = calculateSlope(nums.map((v, i) => i), nums);
+  const intercept = mean - slope * (nums.length / 2);
+  const r2 = pearson * pearson;
+  
+  document.getElementById('slopeStat').textContent = slope.toFixed(3);
+  document.getElementById('interceptStat').textContent = intercept.toFixed(3);
+  document.getElementById('r2Stat').textContent = r2.toFixed(3);
+}
+
+function calculatePearson(x, y) {
+  const n = Math.min(x.length, y.length);
+  if (n === 0) return 0;
+  const mx = x.reduce((s, v) => s + v, 0) / n;
+  const my = y.reduce((s, v) => s + v, 0) / n;
+  let num = 0, sx = 0, sy = 0;
+  for (let i = 0; i < n; i++) {
+    num += (x[i] - mx) * (y[i] - my);
+    sx += (x[i] - mx) ** 2;
+    sy += (y[i] - my) ** 2;
+  }
+  return Math.sqrt(sx * sy) === 0 ? 0 : num / Math.sqrt(sx * sy);
+}
+
+function calculateSlope(x, y) {
+  const n = Math.min(x.length, y.length);
+  const mx = x.reduce((s, v) => s + v, 0) / n;
+  const my = y.reduce((s, v) => s + v, 0) / n;
+  let num = 0, den = 0;
+  for (let i = 0; i < n; i++) {
+    num += (x[i] - mx) * (y[i] - my);
+    den += (x[i] - mx) ** 2;
+  }
+  return den === 0 ? 0 : num / den;
+}
+
+function renderInsights() {
+  const numIdx = globalData.headers.findIndex(h => /value|score|price|amount/i.test(h));
+  const actIdx = globalData.headers.findIndex(h => /activity|type|category/i.test(h));
+  
+  let insights = `The dataset contains <span class="highlight">${globalData.rows.length}</span> records with <span class="highlight">${globalData.headers.length}</span> columns. `;
+  
+  if (numIdx >= 0) {
+    const nums = getNumericColumn(numIdx);
+    const mean = nums.reduce((s, v) => s + v, 0) / nums.length;
+    insights += `Average value: <span class="highlight">${mean.toFixed(2)}</span>. `;
+  }
+  
+  if (actIdx >= 0) {
+    const activities = globalData.rows.map(r => r[actIdx]);
+    const counts = {};
+    activities.forEach(a => counts[a] = (counts[a] || 0) + 1);
+    const top = Object.entries(counts).sort((a, b) => b[1] - a[1])[0];
+    if (top) insights += `Most common category: <span class="highlight">${top[0]}</span> (${top[1]} occurrences). `;
+  }
+  
+  insights += 'Data exploration is complete. Review statistics and visualizations for deeper insights.';
+  document.getElementById('insightsText').innerHTML = insights;
+}
+
+// Auto-load on page ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', loadCSV);
+} else {
+  loadCSV();
+}
+</script>
+</body>
+</html>
