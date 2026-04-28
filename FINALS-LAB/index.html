@@ -648,7 +648,7 @@
 
   <!-- Student 1 block -->
   <div class="assign-block s1">
-    <div class="assign-label">Student 1 · Repo Owner</div>
+    <div class="assign-label">Tamondong · Repo Owner</div>
     <h3>Data Engine &amp; Summary Statistics</h3>
     <ul class="task-list">
       <li>Create the GitHub repo &amp; push this file</li>
@@ -663,7 +663,7 @@
 
   <!-- Student 2 block -->
   <div class="assign-block s2">
-    <div class="assign-label">Student 2 · Collaborator</div>
+    <div class="assign-label">Zapanta · Collaborator</div>
     <h3>Visualizations &amp; Deep Analysis</h3>
     <ul class="task-list">
       <li>Implement <code>drawBarChart()</code> — top 10 scores horizontal bar</li>
@@ -736,7 +736,7 @@
     -->
 
     <div class="todo-box s1">
-      <strong>⚠ TODO — Student 1</strong>
+      <strong>⚠ TODO — Zapanta</strong>
       Implement <code>loadDataset()</code>, <code>renderTable(data)</code>,
       <code>applyFilterSort()</code>, <code>resetTable()</code>, and
       <code>renderSummaryCards(data)</code>. The raw dataset (RAW_DATA) is
@@ -807,7 +807,7 @@
             <!-- Student 1: renderTable() populates this -->
             <tr>
               <td colspan="10" style="text-align:center; padding:50px; color:var(--text-dim);">
-                ⏳ Waiting for Student 1 to implement <code>loadDataset()</code> and <code>renderTable()</code>
+                ⏳ Waiting for Tamondong to implement <code>loadDataset()</code> and <code>renderTable()</code>
               </td>
             </tr>
           </tbody>
@@ -863,7 +863,7 @@
     -->
 
     <div class="todo-box s2">
-      <strong>⚠ TODO — Student 2 (Part A)</strong>
+      <strong>⚠ TODO — Zapanta (Part A)</strong>
       Implement <code>drawBarChart()</code>, <code>drawScatterPlot()</code>, and
       <code>drawDoughnut()</code>. Call them from <code>initCharts()</code>,
       which is already wired to <code>onDataReady()</code>.
@@ -877,7 +877,7 @@
         <p class="chart-sub">Sorted descending · hover for detail</p>
         <div class="chart-placeholder" id="barPlaceholder">
           <span class="ico">📊</span>
-          Student 2: implement <code>drawBarChart()</code>
+          Zapanta: implement <code>drawBarChart()</code>
         </div>
         <canvas id="barChart" style="display:none;"></canvas>
       </div>
@@ -888,7 +888,7 @@
         <p class="chart-sub">All 20 students · A / B / C / D breakdown</p>
         <div class="chart-placeholder" id="doughnutPlaceholder">
           <span class="ico">🍩</span>
-          Student 2: implement <code>drawDoughnut()</code>
+          Zapanta: implement <code>drawDoughnut()</code>
         </div>
         <canvas id="doughnutChart" style="display:none;"></canvas>
       </div>
@@ -900,7 +900,7 @@
       <p class="chart-sub">Each point = one student · includes regression line overlay</p>
       <div class="chart-placeholder" id="scatterPlaceholder" style="height:180px;">
         <span class="ico">🔵</span>
-        Student 2: implement <code>drawScatterPlot()</code>
+        Zapanta: implement <code>drawScatterPlot()</code>
       </div>
       <canvas id="scatterChart" style="display:none; max-height:200px;"></canvas>
     </div>
@@ -1012,7 +1012,7 @@
       <h4>✦ Data-Driven Insights</h4>
       <div id="insightsBody">
         <p class="insight-text placeholder-insight">
-          ⏳ Student 2: implement <code>renderInsights(data)</code> to populate this panel
+          ⏳ Zapanta: implement <code>renderInsights(data)</code> to populate this panel
           with a narrative summary of your findings. Use the computed statistics to write
           3–5 sentences describing patterns, correlations, and recommendations.
           Wrap key numbers in <code>&lt;span class="highlight"&gt;</code>.
@@ -1588,6 +1588,22 @@ function renderInsights(data) {
   console.warn("⚠ Student 2: renderInsights() is not implemented yet.");
 }
 
+function loadData() {
+    fetch("http://127.0.0.1:5000/predict")
+    .then(res => res.json())
+    .then(data => {
+
+        let sample = data.sample;
+
+        let output = "";
+
+        for (let key in sample) {
+            output += key + ": " + sample[key] + "<br>";
+        }
+
+        document.getElementById("activity").innerHTML = output;
+    });
+  }
 /* ─────────────────────────────────────────────────────────────────
    END OF STUDENT CONTRIBUTION ZONES
 ────────────────────────────────────────────────────────────────── */
