@@ -1294,12 +1294,14 @@ document.addEventListener('DOMContentLoaded', () => {
  *   initCharts();
  */
 function initCharts() {
-  // ↓ TODO: Implement this function ↓
-  // drawBarChart('barChart', window.DS);
-  // drawScatterPlot('scatterChart', window.DS);
-  // drawDoughnut('doughnutChart', window.DS);
-  console.warn("⚠ Student 2: initCharts() is not implemented yet.");
+<script>
+function initCharts() {
+  // Call all three chart functions with the right canvas IDs and dataset
+  drawBarChart(document.getElementById('barChart'), window.DS);
+  drawScatterPlot(document.getElementById('scatterChart'), window.DS);
+  drawDoughnut(document.getElementById('doughnutChart'), window.DS.map(d => d.grade));
 }
+</script>
 
 /**
  * STUDENT 2 TODO — drawBarChart(canvasId, data)
@@ -1326,6 +1328,55 @@ function drawBarChart(canvasId, data) {
   // ↓ TODO: Implement this function ↓
   console.warn("⚠ Student 2: drawBarChart() is not implemented yet.");
 }
+
+  <script>
+function drawBarChart(canvasId, data) {
+  // 1. Sort a copy of data by score descending
+  const sorted = [...data].sort((a, b) => b.score - a.score);
+
+  // 2. Slice first 10
+  const top10 = sorted.slice(0, 10);
+
+  // 3. Destroy old chart if exists
+  if (window.CHARTS && window.CHARTS[canvasId]) {
+    window.CHARTS[canvasId].destroy();
+  }
+
+  // 4. Get canvas context
+  const ctx = document.getElementById(canvasId).getContext('2d');
+
+  // 5–7. Create chart
+  const chart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: top10.map(s => s.name), // full student names
+      datasets: [{
+        label: 'Final Score',
+        data: top10.map(s => s.score),
+        backgroundColor: 'rgba(217,79,61,0.82)',
+        borderColor: 'rgba(217,79,61,1)',
+        borderWidth: 1
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      plugins: {
+        legend: { display: false }
+      }
+    }
+  });
+
+  // 8. Store instance
+  if (!window.CHARTS) window.CHARTS = {};
+  window.CHARTS[canvasId] = chart;
+
+  // 9. Hide placeholder, show canvas
+  document.getElementById('barPlaceholder').style.display = 'none';
+  document.getElementById(canvasId).style.display = 'block';
+}
+</script>
+  
 
 /**
  * STUDENT 2 TODO — drawScatterPlot(canvasId, data)
@@ -1355,6 +1406,78 @@ function drawScatterPlot(canvasId, data) {
   console.warn("⚠ Student 2: drawScatterPlot() is not implemented yet.");
 }
 
+  <script>
+function drawScatterPlot(canvasId, data) {
+  // 1. Build points array
+  const points = data.map(d => ({ x: d.attendance, y: d.score }));
+
+  // 2. Destroy old chart if exists
+  if (window.CHARTS && window.CHARTS[canvasId]) {
+    window.CHARTS[canvasId].destroy();
+  }
+
+  // 3. Get canvas context
+  const ctx = document.getElementById(canvasId).getContext('2d');
+
+  // 5. BONUS: Regression line
+  const xVals = data.map(d => d.attendance);
+  const yVals = data.map(d => d.score);
+  const { slope, intercept } = linearRegression(xVals, yVals);
+  const regLine = [
+    { x: 55, y: slope * 55 + intercept },
+    { x: 100, y: slope * 100 + intercept }
+  ];
+
+  // 4 & 5. Create scatter chart with regression line dataset
+  const chart = new Chart(ctx, {
+    type: 'scatter',
+    data: {
+      datasets: [
+        {
+          label: 'Students',
+          data: points,
+          backgroundColor: '#3a7d5c',
+          pointRadius: 7,
+          pointHoverRadius: 10
+        },
+        {
+          label: 'Regression Line',
+          data: regLine,
+          type: 'line',
+          borderColor: 'coral',
+          borderDash: [5, 5],
+          fill: false,
+          pointRadius: 0,
+          tension: 0
+        }
+      ]
+    },
+    options: {
+      plugins: {
+        tooltip: {
+          callbacks: {
+            // 6. Tooltip callback to show student name
+            label: ctx => `${data[ctx.dataIndex].name}: ${ctx.parsed.y}`
+          }
+        }
+      },
+      scales: {
+        x: { title: { display: true, text: 'Attendance (%)' }, min: 50, max: 100 },
+        y: { title: { display: true, text: 'Final Score' }, min: 0, max: 100 }
+      }
+    }
+  });
+
+  // 8. Store instance
+  if (!window.CHARTS) window.CHARTS = {};
+  window.CHARTS[canvasId] = chart;
+
+  // 9. Hide placeholder, show canvas
+  document.getElementById('scatterPlaceholder').style.display = 'none';
+  document.getElementById(canvasId).style.display = 'block';
+}
+      </script>
+  
 /**
  * STUDENT 2 TODO — drawDoughnut(canvasId, data)
  *
@@ -1383,7 +1506,56 @@ function drawDoughnut(canvasId, data) {
   // ↓ TODO: Implement this function ↓
   console.warn("⚠ Student 2: drawDoughnut() is not implemented yet.");
 }
+<script>
+function drawDoughnut(canvasId, data) {
+  // 1. Count each grade
+  const counts = { A: 0, B: 0, C: 0, D: 0 };
+  data.forEach(d => counts[d.grade]++);
 
+  // 2. Destroy old chart if exists
+  if (window.CHARTS && window.CHARTS[canvasId]) {
+    window.CHARTS[canvasId].destroy();
+  }
+
+  // 3. Get canvas context
+  const ctx = document.getElementById(canvasId).getContext('2d');
+
+  // 4–6. Create doughnut chart
+  const chart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['A', 'B', 'C', 'D'],
+      datasets: [{
+        data: [counts.A, counts.B, counts.C, counts.D],
+        backgroundColor: ['#2a7a50', '#3a6ea8', '#b5820d', '#d94f3d']
+      }]
+    },
+    options: {
+      cutout: '60%',
+      plugins: {
+        tooltip: {
+          callbacks: {
+            // 7. Tooltip showing count and percentage
+            label: ctx => {
+              const pct = ((ctx.parsed / data.length) * 100).toFixed(1);
+              return ` Grade ${ctx.label}: ${ctx.parsed} students (${pct}%)`;
+            }
+          }
+        }
+      }
+    }
+  });
+
+  // 8. Store instance
+  if (!window.CHARTS) window.CHARTS = {};
+  window.CHARTS[canvasId] = chart;
+
+  // Hide placeholder, show canvas
+  document.getElementById('doughnutPlaceholder').style.display = 'none';
+  document.getElementById(canvasId).style.display = 'block';
+}
+</script>
+  
 /**
  * STUDENT 2 HELPER — chartTheme()
  *
@@ -1422,7 +1594,41 @@ function chartTheme() {
     }
   };
 }
-
+<script>
+function chartTheme() {
+  return {
+    responsive: true,
+    maintainAspectRatio: true,
+    plugins: {
+      legend: {
+        labels: {
+          color: '#8a8577',
+          font: { family: "'IBM Plex Mono'", size: 11 }
+        }
+      },
+      tooltip: {
+        backgroundColor: '#1a2035',
+        borderColor: '#2e3a56',
+        borderWidth: 1,
+        titleColor: '#c8b98a',
+        bodyColor: '#d0d5e8',
+        titleFont: { family: "'IBM Plex Mono'" },
+        bodyFont:  { family: "'IBM Plex Mono'" }
+      }
+    },
+    scales: {
+      x: {
+        ticks: { color: '#8a8577', font: { family: "'IBM Plex Mono'", size: 10 } },
+        grid:  { color: '#d8d1c4' }
+      },
+      y: {
+        ticks: { color: '#8a8577', font: { family: "'IBM Plex Mono'", size: 10 } },
+        grid:  { color: '#d8d1c4' }
+      }
+    }
+  };
+}
+</script>
 
 /* ── PART B: STATISTICAL ANALYSIS FUNCTIONS ─────────────────────── */
 
