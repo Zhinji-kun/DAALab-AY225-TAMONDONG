@@ -1,40 +1,68 @@
-const activityEl = document.getElementById("activity");
-const xEl = document.getElementById("x");
-const yEl = document.getElementById("y");
-const zEl = document.getElementById("z");
-const startBtn = document.getElementById("startBtn");
+let chart;
 
-function classifyActivity(x, y, z) {
-  const magnitude = Math.sqrt(x*x + y*y + z*z);
+// Sample HAR-like data
+const RAW_DATA = [
+    [0.1, 0.2, 0.3],
+    [0.5, 0.6, 0.7],
+    [0.01, 0.02, 0.03],
+    [0.9, 0.8, 0.7]
+];
 
-  if (magnitude < 1.2) return "Idle / Sitting";
-  if (magnitude < 2) return "Walking";
-  return "Running";
-}
-
-startBtn.addEventListener("click", () => {
-  if (typeof DeviceMotionEvent !== "undefined" &&
-      typeof DeviceMotionEvent.requestPermission === "function") {
-
-    DeviceMotionEvent.requestPermission().then(response => {
-      if (response === "granted") {
-        startTracking();
-      } else {
-        alert("Permission denied");
-      }
+async function predict(features) {
+    const res = await fetch("http://127.0.0.1:5000/predict", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ features })
     });
 
-  } else {
-    startTracking();
-  }
-});
+    const data = await res.json();
+    return data.activity;
+}
 
-function startTracking() {
-  window.addEventListener("devicemotion", (event) => {
-    const x = event.accelerationIncludingGravity.x || 0;
-    const y = event.accelerationIncludingGravity.y || 0;
-    const z = event.accelerationIncludingGravity.z || 0;
+async function loadData() {
+    const tbody = document.getElementById("tableBody");
+    tbody.innerHTML = "";
 
+    let counts = {};
+
+    for (let i = 0; i < RAW_DATA.length; i++) {
+        const features = RAW_DATA[i];
+        const activity = await predict(features);
+
+        counts[activity] = (counts[activity] || 0) + 1;
+
+        const row = `
+            <tr>
+                <td>${i + 1}</td>
+                <td>${features[0]}</td>
+                <td>${features[1]}</td>
+                <td>${features[2]}</td>
+                <td>${activity}</td>
+            </tr>
+        `;
+
+        tbody.innerHTML += row;
+    }
+
+    renderChart(counts);
+}
+
+function renderChart(counts) {
+    const ctx = document.getElementById("chart");
+
+    if (chart) chart.destroy();
+
+    chart = new Chart(ctx, {
+        type: "bar",
+        data: {
+            labels: Object.keys(counts),
+            datasets: [{
+                label: "Activity Frequency",
+                data: Object.values(counts)
+            }]
+        }
+    });
+}
     xEl.textContent = x.toFixed(2);
     yEl.textContent = y.toFixed(2);
     zEl.textContent = z.toFixed(2);
