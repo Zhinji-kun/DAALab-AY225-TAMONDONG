@@ -1,40 +1,33 @@
-let chart;
+const API = "http://127.0.0.1:5000";
 
-// Sample HAR-like data
-const RAW_DATA = [
-    [0.1, 0.2, 0.3],
-    [0.5, 0.6, 0.7],
-    [0.01, 0.02, 0.03],
-    [0.9, 0.8, 0.7]
-];
+async function predict() {
+  const f1 = parseFloat(document.getElementById("f1").value);
+  const f2 = parseFloat(document.getElementById("f2").value);
+  const f3 = parseFloat(document.getElementById("f3").value);
 
-async function predict(features) {
-    const res = await fetch("http://127.0.0.1:5000/predict", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ features })
-    });
+  const res = await fetch(`${API}/predict`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      features: [f1, f2, f3]
+    })
+  });
 
-    const data = await res.json();
-    return data.activity;
+  const data = await res.json();
+
+  document.getElementById("result").innerText =
+    data.activity ? "Predicted: " + data.activity : "Error: " + data.error;
 }
 
-async function loadData() {
-    const tbody = document.getElementById("tableBody");
-    tbody.innerHTML = "";
+async function loadSummary() {
+  const res = await fetch(`${API}/summary`);
+  const data = await res.json();
 
-    let counts = {};
-
-    for (let i = 0; i < RAW_DATA.length; i++) {
-        const features = RAW_DATA[i];
-        const activity = await predict(features);
-
-        counts[activity] = (counts[activity] || 0) + 1;
-
-        const row = `
-            <tr>
-                <td>${i + 1}</td>
-                <td>${features[0]}</td>
+  document.getElementById("summary").textContent =
+    JSON.stringify(data, null, 2);
+}                <td>${features[0]}</td>
                 <td>${features[1]}</td>
                 <td>${features[2]}</td>
                 <td>${activity}</td>
