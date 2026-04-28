@@ -784,6 +784,17 @@
         </select>
         <button class="primary" onclick="applyFilterSort()">Apply</button>
         <button onclick="resetTable()">Reset</button>
+        <p id="activity">Loading data...</p>
+        <table border="1">
+    <thead>
+        <tr>
+            <th>Feature</th>
+            <th>Value</th>
+        </tr>
+    </thead>
+    <tbody id="dataTable"></tbody>
+        </table>
+
         <span class="row-count" id="rowCount">— rows</span>
       </div>
 
@@ -1590,7 +1601,7 @@ function renderInsights(data) {
 
 function loadData() {
     fetch("http://127.0.0.1:5000/predict")
-    .then(res => res.json())
+    .then(response => response.json())
     .then(data => {
 
         let sample = data.sample;
@@ -1602,7 +1613,29 @@ function loadData() {
         }
 
         document.getElementById("activity").innerHTML = output;
+    })
+    .catch(error => {
+        console.log(error);
+        document.getElementById("activity").innerText = "Error loading data";
     });
+}
+
+// run when page loads
+loadDataset();
+
+  function renderTable(sample) {
+    let table = document.getElementById("dataTable");
+    table.innerHTML = "";
+
+    for (let key in sample) {
+        let row = `
+            <tr>
+                <td>${key}</td>
+                <td>${sample[key]}</td>
+            </tr>
+        `;
+        table.innerHTML += row;
+    }
   }
 /* ─────────────────────────────────────────────────────────────────
    END OF STUDENT CONTRIBUTION ZONES
