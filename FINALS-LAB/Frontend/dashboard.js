@@ -63,11 +63,19 @@ function renderChart(counts) {
         }
     });
 }
-    xEl.textContent = x.toFixed(2);
-    yEl.textContent = y.toFixed(2);
-    zEl.textContent = z.toFixed(2);
+function renderChart(counts) {
+    const ctx = document.getElementById("chart");
 
-    const activity = classifyActivity(x, y, z);
-    activityEl.textContent = activity;
-  });
+    if (chart) chart.destroy();
+
+    chart = new Chart(ctx, {
+        type: "bar",
+        data: {
+            labels: Object.keys(counts),
+            datasets: [{
+                label: "Activity Frequency",
+                data: Object.values(counts)
+            }]
+        }
+    });
 }
