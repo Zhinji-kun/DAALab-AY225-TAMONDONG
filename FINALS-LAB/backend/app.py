@@ -140,7 +140,7 @@ def predict() -> Any:
         payload = request.get_json(force=True)
         X_row = _parse_features(payload)
         pred = model.predict(X_row)[0]
-        return jsonify({"prediction": str(pred)})
+        return jsonify({"activity": str(pred)})
     except Exception as exc:
         return jsonify({"error": f"{type(exc).__name__}: {exc}"}), 400
 
