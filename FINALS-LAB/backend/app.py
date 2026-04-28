@@ -8,7 +8,7 @@ from sklearn.tree import DecisionTreeClassifier
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-DATASET_PATH = BASE_DIR / "dataset" / "har.csv"
+DATASET_PATH = BASE_DIR / "dataset" / "test.csv"
 
 LABEL_CANDIDATES = {"activity", "label", "target", "class", "y"}
 
