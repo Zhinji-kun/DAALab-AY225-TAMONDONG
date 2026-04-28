@@ -1564,36 +1564,6 @@ function drawDoughnut(canvasId, data) {
  *
  * @returns {Object} Chart.js options object
  */
-function chartTheme() {
-  return {
-    responsive: true,
-    maintainAspectRatio: true,
-    plugins: {
-      legend: {
-        labels: { color: '#8a8577', font: { family: "'IBM Plex Mono'", size: 11 } }
-      },
-      tooltip: {
-        backgroundColor: '#1a2035',
-        borderColor: '#2e3a56',
-        borderWidth: 1,
-        titleColor: '#c8b98a',
-        bodyColor: '#d0d5e8',
-        titleFont: { family: "'IBM Plex Mono'" },
-        bodyFont:  { family: "'IBM Plex Mono'" }
-      }
-    },
-    scales: {
-      x: {
-        ticks: { color: '#8a8577', font: { family: "'IBM Plex Mono'", size: 10 } },
-        grid:  { color: '#d8d1c4' }
-      },
-      y: {
-        ticks: { color: '#8a8577', font: { family: "'IBM Plex Mono'", size: 10 } },
-        grid:  { color: '#d8d1c4' }
-      }
-    }
-  };
-}
 <script>
 function chartTheme() {
   return {
@@ -1601,10 +1571,7 @@ function chartTheme() {
     maintainAspectRatio: true,
     plugins: {
       legend: {
-        labels: {
-          color: '#8a8577',
-          font: { family: "'IBM Plex Mono'", size: 11 }
-        }
+        labels: { color: '#8a8577', font: { family: "'IBM Plex Mono'", size: 11 } }
       },
       tooltip: {
         backgroundColor: '#1a2035',
